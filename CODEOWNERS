@@ -291,6 +291,7 @@
 /drivers/*/*xec*                          @franciscomunoz @albertofloyd @scottwcpg
 /drivers/watchdog/*gecko*                 @oanerer
 /drivers/watchdog/wdt_handlers.c          @andrewboie
+/drivers/watchdog/*software*              @martinjaeger
 /drivers/wifi/                            @jukkar @tbursztyka @pfalcon
 /drivers/wifi/eswifi/                     @loicpoulain @nandojve
 /drivers/wifi/winc1500/                   @kludentwo

@@ -1,0 +1,22 @@
+# Software watchdog configuration
+
+# Copyright (c) 2020 Libre Solar Technologies GmbH
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig WDT_SOFTWARE
+	bool "Additional software watchdog for more channels"
+	depends on 0
+	help
+	  Enable software watchdog
+
+	  The software watchdog allows to have individual watchdog channels
+	  per thread, even if the hardware supports only a single watchdog.
+
+config WDT_SOFTWARE_CHANNELS
+	int "Maximum number of software watchdog channels"
+	depends on WDT_SOFTWARE
+	default 5
+	range 2 100
+	help
+	  The timeouts for each channel are stored in an array. Allocate only
+	  the required amount of channels to reduce memory footprint.
