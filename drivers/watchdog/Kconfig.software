@@ -5,7 +5,7 @@
 
 menuconfig WDT_SOFTWARE
 	bool "Additional software watchdog for more channels"
-	depends on 0
+	depends on IWDG_STM32
 	help
 	  Enable software watchdog
 

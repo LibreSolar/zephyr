@@ -14,6 +14,10 @@
 
 #include "wdt_iwdg_stm32.h"
 
+#if defined(CONFIG_WDT_SOFTWARE)
+#include "wdt_software.h"
+#endif
+
 /* Minimal timeout in microseconds. */
 #define IWDG_TIMEOUT_MIN	100
 /* Maximal timeout in microseconds. */
@@ -100,10 +104,17 @@ static int iwdg_stm32_install_timeout(const struct device *dev,
 	uint32_t prescaler = 0U;
 	uint32_t reload = 0U;
 	uint32_t tickstart;
+	int channel = 0;
 
 	if (config->callback != NULL) {
 		return -ENOTSUP;
 	}
+
+#if defined(CONFIG_WDT_SOFTWARE)
+	channel = sw_wdt_install_timeout(config->window.max);
+	/* use IWDG as fallback with smallest sw wdt timeout */
+	timeout = sw_wdt_min_timeout() * USEC_PER_MSEC;
+#endif
 
 	iwdg_stm32_convert_timeout(timeout, &prescaler, &reload);
 
@@ -130,17 +141,34 @@ static int iwdg_stm32_install_timeout(const struct device *dev,
 	/* Reload counter just before leaving */
 	LL_IWDG_ReloadCounter(iwdg);
 
-	return 0;
+	return channel;
 }
 
 static int iwdg_stm32_feed(const struct device *dev, int channel_id)
 {
 	IWDG_TypeDef *iwdg = IWDG_STM32_STRUCT(dev);
+	int err = 0;
 
-	ARG_UNUSED(channel_id);
+	if (channel_id > 0) {
+#if defined(CONFIG_WDT_SOFTWARE)
+		err = sw_wdt_feed(channel_id);
+		if (err == -ETIMEDOUT) {
+			/* One other software channel timed out, so we exit
+			 * immediately and don't feed IWDG to trigger reset
+			 */
+			err = 0;
+			goto exit;
+		}
+#else
+		err = -EINVAL;
+		goto exit;
+#endif
+	}
+
 	LL_IWDG_ReloadCounter(iwdg);
 
-	return 0;
+exit:
+	return err;
 }
 
 static const struct wdt_driver_api iwdg_stm32_api = {
