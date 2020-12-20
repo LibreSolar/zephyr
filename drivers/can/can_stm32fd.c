@@ -7,13 +7,14 @@
 #include <drivers/can.h>
 #include <kernel.h>
 #include <soc.h>
+#include <stm32_ll_rcc.h>
 #include "can_stm32fd.h"
 #include <pinmux/stm32/pinmux_stm32.h>
 
 #include <logging/log.h>
 LOG_MODULE_DECLARE(can_driver, CONFIG_CAN_LOG_LEVEL);
 
-uint32_t can_stm32fd_get_core_clock(const struct device *dev)
+int can_stm32fd_get_core_clock(const struct device *dev, uint32_t *rate)
 {
 	ARG_UNUSED(dev);
 	uint32_t core_clock = LL_RCC_GetFDCANClockFreq(LL_RCC_FDCAN_CLKSOURCE);

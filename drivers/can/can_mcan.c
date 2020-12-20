@@ -246,7 +246,7 @@ int can_mcan_init(const struct device *dev, const struct can_mcan_config *cfg,
 		    (ARRAY_SIZE(msg_ram->tx_fifo) << CAN_MCAN_TXBC_TFQS_POS);
 	if (sizeof(msg_ram->tx_fifo[0].data) <= 24) {
 		can->txesc = (sizeof(msg_ram->tx_fifo[0].data) - 8) / 4;
-		
+
 	} else {
 		can->txesc = (sizeof(msg_ram->tx_fifo[0].data) - 32) / 16 + 5;
 	}
@@ -474,7 +474,6 @@ static void can_mcan_get_message(struct can_mcan_data *data,
 					  CAN_STANDARD_IDENTIFIER;
 		frame.dlc = hdr.dlc;
 		frame.brs = hdr.brs;
-		frame.ext_buf = 0;
 #if defined(CONFIG_CAN_RX_TIMESTAMP)
 		frame.timestamp = hdr.rxts;
 #endif
@@ -650,15 +649,6 @@ int can_mcan_send(const struct can_mcan_config *cfg,
 	msg_ram->tx_fifo[put_idx].hdr = tx_hdr;
 
 	/* data needs to be written in 32 bit blocks!*/
-	if (frame->ext_buf) {
-		for (src = (const uint32_t *)frame->buf,
-		     dst = msg_ram->tx_fifo[put_idx].data_32,
-		     end = dst + CAN_DIV_CEIL(data_length, sizeof(uint32_t));
-		     dst < end;
-		     src++, dst++) {
-			*dst = UNALIGNED_GET(src);
-		}
-	} else {
 		for (src = frame->data_32,
 		     dst = msg_ram->tx_fifo[put_idx].data_32,
 		     end = dst + CAN_DIV_CEIL(data_length, sizeof(uint32_t));
@@ -666,8 +656,7 @@ int can_mcan_send(const struct can_mcan_config *cfg,
 		     src++, dst++) {
 			*dst = *src;
 		}
-	}
-	
+
 
 	data->tx_fin_cb[put_idx] = callback;
 	data->tx_fin_cb_arg[put_idx] = callback_arg;
