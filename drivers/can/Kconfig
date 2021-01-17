@@ -29,6 +29,16 @@ config CAN_FD_MODE
 	help
 	  Enable CAN-FD compatible API
 
+if CAN_FD_MODE
+
+config CAN_MAX_DLEN
+	int "Max data lenght in CAN frames"
+	range 8 64
+	default 64
+	help
+	  Size of the data field in the zcan_frame
+endif # CAN_FD_MODE
+
 config CAN_INIT_PRIORITY
 	int "CAN driver init priority"
 	default 80
